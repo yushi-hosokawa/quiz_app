@@ -1157,7 +1157,29 @@ _9B5xZw5r8GKz__H8qp9mOTehXuuoGfl6NJSbVWr1hU,
 _4wl7BM71hNZBELboWWPcjt12RLQ7g07n9d1GtHypsko
 ];
 
-const assets = {};
+const assets = {
+  "/index.mjs": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"1e9ca-LOjx1VTjkYAwnZcIvM2gLo0lMrQ\"",
+    "mtime": "2025-10-18T06:32:31.062Z",
+    "size": 125386,
+    "path": "index.mjs"
+  },
+  "/index.mjs.map": {
+    "type": "application/json",
+    "etag": "\"6d0b5-YFZcG/eA2Li5A0IKfA8gwJndqhY\"",
+    "mtime": "2025-10-18T06:32:31.062Z",
+    "size": 446645,
+    "path": "index.mjs.map"
+  },
+  "/timing.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"18e-0pRLUDweg+nNOYiHMfwI/i1Hccs\"",
+    "mtime": "2025-10-18T06:32:31.062Z",
+    "size": 398,
+    "path": "timing.js"
+  }
+};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
@@ -2309,7 +2331,10 @@ const count_get = defineEventHandler(async (event) => {
     where.genreId = { in: genreIds };
   }
   if (difficulties && difficulties.length > 0) {
-    where.difficulty = { in: difficulties };
+    where.OR = [
+      { difficulty: { in: difficulties } },
+      { difficulty: null }
+    ];
   }
   if (tags && tags.length > 0) {
     where.tags = {
@@ -2565,7 +2590,10 @@ const random_get = defineEventHandler(async (event) => {
       where.genreId = { in: genreIds };
     }
     if (difficulties && difficulties.length > 0) {
-      where.difficulty = { in: difficulties };
+      where.OR = [
+        { difficulty: { in: difficulties } },
+        { difficulty: null }
+      ];
     }
     if (tags && tags.length > 0) {
       where.tags = {

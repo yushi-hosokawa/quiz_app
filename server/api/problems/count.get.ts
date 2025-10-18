@@ -35,7 +35,11 @@ export default defineEventHandler(async (event) => {
   }
 
   if (difficulties && difficulties.length > 0) {
-    where.difficulty = { in: difficulties }
+    // 難易度フィルタ: 指定された難易度 OR null（未設定）を含める
+    where.OR = [
+      { difficulty: { in: difficulties } },
+      { difficulty: null }
+    ]
   }
 
   if (tags && tags.length > 0) {

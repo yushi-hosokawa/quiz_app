@@ -136,7 +136,7 @@
       </div>
 
       <!-- カテゴリ・難易度 -->
-      <div class="card">
+      <div class="card overflow-visible relative z-40">
         <div class="grid md:grid-cols-3 gap-4">
           <div class="relative z-30">
             <label class="block text-sm font-bold text-gray-900 mb-3">
