@@ -8,7 +8,16 @@
       "Bash(npm run dev)",
       "Bash(mysql:*)",
       "Bash(curl:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx prisma migrate dev --name add-cascade-delete-to-study-records)",
+      "Bash(npx prisma migrate resolve --applied \"0_init\")",
+      "Bash(npx prisma db pull)",
+      "Bash(npx prisma migrate dev --name init --create-only)",
+      "Bash(npx prisma migrate reset --force)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"はい。削除したうえで新たにテスト問題を5問作成してください\" npx prisma migrate reset --force)",
+      "Bash(lsof -ti:3000)",
+      "Bash(/dev/null)",
+      "Bash(npx prisma db push --accept-data-loss)"
     ],
     "deny": [],
     "ask": []

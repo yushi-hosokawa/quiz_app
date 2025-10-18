@@ -188,8 +188,11 @@ docker-compose --env-file .env.docker logs --tail=100 app
 # データベースに接続
 docker-compose --env-file .env.docker exec db mysql -u quizapp -p quiz_app
 
-# Prismaマイグレーション実行
+# Prismaスキーマをデータベースに適用
 docker-compose --env-file .env.docker exec app npx prisma db push
+
+# Prisma Clientを再生成
+docker-compose --env-file .env.docker exec app npx prisma generate
 
 # Prisma Studio起動（開発環境）
 docker-compose -f docker-compose.dev.yml --env-file .env.docker exec app npx prisma studio
@@ -413,6 +416,25 @@ Dockerボリューム内に保存されます。`docker volume ls`で確認で�
 ### Q: 複数の環境を同時に起動できる？
 
 可能です。開発環境と本番環境は異なるコンテナ名とネットワークを使用します。ただし、ポートの競合に注意してください。
+
+### Q: 問題を削除するとどうなる？
+
+問題を削除すると、関連する以下のデータが自動的に削除されます（カスケード削除）：
+- 選択肢（choices）
+- タグ（problem_tags）
+- 学習記録（study_records）
+
+これはデータの整合性を保つための設計です。
+
+### Q: データベーススキーマを更新するには？
+
+1. `prisma/schema.prisma`を編集
+2. 以下のコマンドでスキーマを適用：
+```bash
+docker-compose --env-file .env.docker exec app npx prisma db push
+```
+
+**注意**: このプロジェクトではマイグレーションファイルを使用せず、`prisma db push`でスキーマを直接同期しています。
 
 ## サポート
 
