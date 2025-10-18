@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-900;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl
+           hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold
+           shadow-lg hover:shadow-xl hover:scale-105 transform;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-gray-50
+           transition-all duration-300 font-semibold border-2 border-gray-200
+           hover:border-gray-300 hover:shadow-md hover:scale-105 transform;
+  }
+
+  .card {
+    @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8
+           border border-gray-100 hover:shadow-2xl transition-all duration-300
+           hover:scale-[1.02] transform;
+  }
+
+  .card-gradient {
+    @apply bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl p-8
+           border border-blue-100 hover:shadow-2xl transition-all duration-300
+           hover:scale-[1.02] transform;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+           focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500
+           transition-all duration-300 bg-white/50 backdrop-blur-sm;
+  }
+
+  .badge {
+    @apply px-3 py-1 text-xs font-semibold rounded-full inline-block;
+  }
+
+  .badge-primary {
+    @apply badge bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md;
+  }
+
+  .badge-success {
+    @apply badge bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md;
+  }
+
+  .badge-warning {
+    @apply badge bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent;
+  }
+
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md border border-white/50 shadow-lg;
+  }
+}
