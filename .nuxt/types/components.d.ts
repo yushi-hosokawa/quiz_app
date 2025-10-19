@@ -14,6 +14,7 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 interface _GlobalComponents {
+  'CodeEditor': typeof import("../../components/CodeEditor.vue")['default']
   'ComboBox': typeof import("../../components/ComboBox.vue")['default']
   'Toast': typeof import("../../components/Toast.vue")['default']
   'NuxtWelcome': typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
@@ -39,6 +40,7 @@ interface _GlobalComponents {
   'Html': typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Html']
   'Body': typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Body']
   'NuxtIsland': typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
+  'LazyCodeEditor': LazyComponent<typeof import("../../components/CodeEditor.vue")['default']>
   'LazyComboBox': LazyComponent<typeof import("../../components/ComboBox.vue")['default']>
   'LazyToast': LazyComponent<typeof import("../../components/Toast.vue")['default']>
   'LazyNuxtWelcome': LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>

@@ -17,7 +17,8 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"はい。削除したうえで新たにテスト問題を5問作成してください\" npx prisma migrate reset --force)",
       "Bash(lsof -ti:3000)",
       "Bash(/dev/null)",
-      "Bash(npx prisma db push --accept-data-loss)"
+      "Bash(npx prisma db push --accept-data-loss)",
+      "Bash(npm search codemirror --json)"
     ],
     "deny": [],
     "ask": []

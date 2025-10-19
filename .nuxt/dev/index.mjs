@@ -1157,29 +1157,7 @@ _9B5xZw5r8GKz__H8qp9mOTehXuuoGfl6NJSbVWr1hU,
 _4wl7BM71hNZBELboWWPcjt12RLQ7g07n9d1GtHypsko
 ];
 
-const assets = {
-  "/index.mjs": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"1e9ca-LOjx1VTjkYAwnZcIvM2gLo0lMrQ\"",
-    "mtime": "2025-10-18T06:32:31.062Z",
-    "size": 125386,
-    "path": "index.mjs"
-  },
-  "/index.mjs.map": {
-    "type": "application/json",
-    "etag": "\"6d0b5-YFZcG/eA2Li5A0IKfA8gwJndqhY\"",
-    "mtime": "2025-10-18T06:32:31.062Z",
-    "size": 446645,
-    "path": "index.mjs.map"
-  },
-  "/timing.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"18e-0pRLUDweg+nNOYiHMfwI/i1Hccs\"",
-    "mtime": "2025-10-18T06:32:31.062Z",
-    "size": 398,
-    "path": "timing.js"
-  }
-};
+const assets = {};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
@@ -1602,6 +1580,7 @@ const _lazy_wT8lFQ = () => Promise.resolve().then(function () { return _id__dele
 const _lazy_EspuyB = () => Promise.resolve().then(function () { return _id__get$1; });
 const _lazy_7fkTTw = () => Promise.resolve().then(function () { return _id__put$1; });
 const _lazy_ktn_pr = () => Promise.resolve().then(function () { return count_get$1; });
+const _lazy_XOfdMi = () => Promise.resolve().then(function () { return importJson_post$1; });
 const _lazy_aBdsDp = () => Promise.resolve().then(function () { return import_post$1; });
 const _lazy_cko9xF = () => Promise.resolve().then(function () { return index_get$5; });
 const _lazy_j_QIJp = () => Promise.resolve().then(function () { return index_post$3; });
@@ -1634,6 +1613,7 @@ const handlers = [
   { route: '/api/problems/:id', handler: _lazy_EspuyB, lazy: true, middleware: false, method: "get" },
   { route: '/api/problems/:id', handler: _lazy_7fkTTw, lazy: true, middleware: false, method: "put" },
   { route: '/api/problems/count', handler: _lazy_ktn_pr, lazy: true, middleware: false, method: "get" },
+  { route: '/api/problems/import-json', handler: _lazy_XOfdMi, lazy: true, middleware: false, method: "post" },
   { route: '/api/problems/import', handler: _lazy_aBdsDp, lazy: true, middleware: false, method: "post" },
   { route: '/api/problems', handler: _lazy_cko9xF, lazy: true, middleware: false, method: "get" },
   { route: '/api/problems', handler: _lazy_j_QIJp, lazy: true, middleware: false, method: "post" },
@@ -2352,6 +2332,102 @@ const count_get = defineEventHandler(async (event) => {
 const count_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: count_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const importJson_post = defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event);
+    const { problems } = body;
+    if (!Array.isArray(problems) || problems.length === 0) {
+      throw createError({
+        statusCode: 400,
+        message: "\u554F\u984C\u30C7\u30FC\u30BF\u304C\u4E0D\u6B63\u3067\u3059"
+      });
+    }
+    let imported = 0;
+    const errors = [];
+    for (const [index, problemData] of problems.entries()) {
+      try {
+        let languageId = null;
+        let genreId = null;
+        if (problemData.language) {
+          const language = await prisma.language.upsert({
+            where: { name: problemData.language },
+            create: { name: problemData.language },
+            update: {}
+          });
+          languageId = language.id;
+        }
+        if (problemData.genre) {
+          const genre = await prisma.genre.upsert({
+            where: { name: problemData.genre },
+            create: { name: problemData.genre },
+            update: {}
+          });
+          genreId = genre.id;
+        }
+        const problem = await prisma.problem.create({
+          data: {
+            questionType: problemData.questionType,
+            questionText: problemData.questionText,
+            answerText: problemData.answerText || null,
+            explanation: problemData.explanation || null,
+            languageId,
+            genreId,
+            difficulty: problemData.difficulty || null
+          }
+        });
+        if (problemData.questionType === "choice" && problemData.choices) {
+          for (const [choiceIndex, choice] of problemData.choices.entries()) {
+            await prisma.choice.create({
+              data: {
+                problemId: problem.id,
+                choiceText: choice.choiceText,
+                isCorrect: choice.isCorrect || false,
+                displayOrder: choiceIndex + 1
+              }
+            });
+          }
+        }
+        if (problemData.tags && Array.isArray(problemData.tags)) {
+          for (const tag of problemData.tags) {
+            await prisma.problemTag.create({
+              data: {
+                problemId: problem.id,
+                tagName: tag
+              }
+            });
+          }
+        }
+        imported++;
+      } catch (error) {
+        console.error(`Failed to import problem ${index + 1}:`, error);
+        errors.push(`\u554F\u984C${index + 1}: ${error.message}`);
+      }
+    }
+    if (errors.length > 0) {
+      return {
+        imported,
+        errors,
+        message: `${imported}\u554F\u3092\u30A4\u30F3\u30DD\u30FC\u30C8\u3057\u307E\u3057\u305F\uFF08${errors.length}\u4EF6\u306E\u30A8\u30E9\u30FC\uFF09`
+      };
+    }
+    return {
+      imported,
+      message: `${imported}\u554F\u3092\u30A4\u30F3\u30DD\u30FC\u30C8\u3057\u307E\u3057\u305F`
+    };
+  } catch (error) {
+    console.error("JSON import error:", error);
+    throw createError({
+      statusCode: 500,
+      message: error.message || "\u30A4\u30F3\u30DD\u30FC\u30C8\u306B\u5931\u6557\u3057\u307E\u3057\u305F"
+    });
+  }
+});
+
+const importJson_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: importJson_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const import_post = defineEventHandler(async (event) => {

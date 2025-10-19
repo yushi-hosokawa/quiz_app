@@ -6,6 +6,9 @@
         <NuxtLink to="/problems/import" class="btn-secondary">
           📥 CSVインポート
         </NuxtLink>
+        <NuxtLink to="/problems/import-json" class="btn-secondary">
+          📄 JSONインポート
+        </NuxtLink>
         <NuxtLink to="/problems/create" class="btn-primary">
           ➕ 新規作成
         </NuxtLink>

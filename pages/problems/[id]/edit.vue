@@ -115,7 +115,15 @@
         <label class="block text-sm font-bold text-gray-900 mb-3">
           正解 <span class="text-red-500">*</span>
         </label>
+        <!-- プログラミング問題の場合は行番号付きエディタ -->
+        <CodeEditor
+          v-if="form.questionType === 'code'"
+          v-model="form.answerText"
+          placeholder="コードを入力してください"
+        />
+        <!-- 記述式問題の場合は通常のテキストエリア -->
         <textarea
+          v-else
           v-model="form.answerText"
           class="input-field h-32 font-mono text-sm"
           placeholder="正解を入力してください"

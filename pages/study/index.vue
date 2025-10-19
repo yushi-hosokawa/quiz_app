@@ -33,9 +33,10 @@
 
       <!-- 問題文 -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 leading-relaxed">
-          {{ currentProblem.questionText }}
-        </h2>
+        <div
+          class="text-2xl font-bold text-gray-900 mb-6 leading-relaxed markdown-content"
+          v-html="renderMarkdown(currentProblem.questionText)"
+        ></div>
 
         <!-- 選択式の場合 -->
         <div v-if="currentProblem.questionType === 'choice' && currentProblem.choices" class="space-y-3">
@@ -63,14 +64,23 @@
         </div>
 
         <!-- 記述式・プログラミングの場合 -->
-        <div v-else class="relative">
-          <textarea
+        <div v-else>
+          <!-- プログラミング問題の場合は行番号付きエディタ -->
+          <CodeEditor
+            v-if="currentProblem.questionType === 'code'"
             v-model="userAnswer"
-            class="input-field h-40 font-mono text-sm"
-            placeholder="回答を入力してください..."
-          ></textarea>
-          <div class="absolute bottom-4 right-4 text-xs text-gray-400">
-            {{ userAnswer.length }} 文字
+            placeholder="コードを入力してください..."
+          />
+          <!-- 記述式問題の場合は通常のテキストエリア -->
+          <div v-else class="relative">
+            <textarea
+              v-model="userAnswer"
+              class="input-field h-40 font-mono text-sm"
+              placeholder="回答を入力してください..."
+            ></textarea>
+            <div class="absolute bottom-4 right-4 text-xs text-gray-400">
+              {{ userAnswer.length }} 文字
+            </div>
           </div>
         </div>
       </div>
@@ -106,7 +116,7 @@
           <p v-if="currentProblem.questionType === 'choice'" class="text-gray-800 font-medium">
             {{ selectedChoice?.choiceText }}
           </p>
-          <p v-else class="whitespace-pre-wrap text-gray-800 font-mono text-sm">{{ userAnswer || '（未回答）' }}</p>
+          <pre v-else class="whitespace-pre-wrap text-gray-800 font-mono text-sm overflow-x-auto">{{ userAnswer || '（未回答）' }}</pre>
         </div>
       </div>
 
@@ -120,7 +130,11 @@
           <p v-if="currentProblem.questionType === 'choice'" class="text-gray-800 font-medium">
             {{ currentProblem.choices?.find(c => c.isCorrect)?.choiceText }}
           </p>
-          <p v-else class="whitespace-pre-wrap text-gray-800 font-mono text-sm">{{ currentProblem.answerText }}</p>
+          <div
+            v-else
+            class="text-gray-800 markdown-content"
+            v-html="renderMarkdown(currentProblem.answerText)"
+          ></div>
         </div>
       </div>
 
@@ -131,7 +145,10 @@
           解説
         </h3>
         <div class="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
-          <p class="whitespace-pre-wrap text-gray-700 leading-relaxed">{{ currentProblem.explanation }}</p>
+          <div
+            class="text-gray-700 leading-relaxed markdown-content"
+            v-html="renderMarkdown(currentProblem.explanation)"
+          ></div>
         </div>
       </div>
 
@@ -197,6 +214,7 @@ definePageMeta({
 
 const { error } = useToast()
 const { getSettings } = useStudySettings()
+const { renderMarkdown } = useMarkdown()
 
 const problems = ref<any[]>([])
 const currentIndex = ref(0)

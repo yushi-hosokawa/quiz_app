@@ -33,8 +33,8 @@
    - 自己判定方式
 
 3. **プログラミング問題** ✅
-   - コードエディタ機能
-   - シンタックスハイライト対応
+   - ダークテーマのコードエディタ風UI ✅
+   - モノスペースフォント、グリーンテキスト ✅
 
 #### 2.1.2 問題属性
 各問題は以下のメタデータを持つ：
@@ -55,6 +55,18 @@
   - CSVフォーマット定義
   - バリデーション機能
   - エラー時の詳細表示
+- **JSON一括登録** ✅: JSON形式での問題インポート
+  - JSON形式でのコピー&ペースト対応
+  - 配列形式で複数問題を一括登録
+  - リアルタイムプレビュー機能
+  - Markdown記法対応
+
+#### 2.1.4 Markdown対応 ✅
+- 問題文、解答、解説でMarkdown記法が使用可能
+- インラインコード（\`code\`）のサポート
+- コードブロック（\`\`\`）のサポート
+- 太字、斜体、リスト、引用などの基本的なMarkdown記法に対応
+- XSS対策のためのHTMLサニタイズ機能
 
 ### 2.2 カテゴリ管理機能 ✅
 
@@ -281,6 +293,16 @@
    - インポート実行
    - エラー表示
 
+9.5. **JSONインポート画面** (`/problems/import-json`) ✅
+   - JSON形式での問題データ入力（コピー&ペースト）
+   - ダークテーマのコードエディタ
+   - フォーマット説明とサンプルデータ
+   - リアルタイム検証機能
+   - プレビュー機能
+   - バリデーションとエラー表示
+   - 複数問題の一括インポート
+   - Markdown記法対応
+
 10. **カテゴリ管理画面** (`/categories`) ✅
     - 言語の一覧・追加・削除
     - ジャンルの一覧・追加・削除
@@ -299,6 +321,7 @@
 - `GET /api/problems/random` - ランダム問題取得 ✅
 - `GET /api/problems/review` - 復習問題取得 ✅
 - `POST /api/problems/import` - CSVインポート ✅
+- `POST /api/problems/import-json` - JSONインポート ✅
 
 ### 6.2 カテゴリ管理API
 - `GET /api/languages` - 言語一覧取得 ✅
@@ -346,7 +369,16 @@ question_type,question_text,answer_text,explanation,language,genre,difficulty,ta
 - **choice1-4**: 選択肢（選択式の場合のみ）
 - **correct_choice**: 正解の選択肢番号（選択式の場合のみ、1-4）
 
-### 7.3 サンプルCSV
+### 7.3 Markdown対応
+問題文、解答、解説にはMarkdown記法が使用できます：
+- インラインコード: \`code\`
+- コードブロック: \`\`\`language\ncode\n\`\`\`
+- 太字: **bold**
+- 斜体: *italic*
+- リスト: - item または 1. item
+- 引用: > quote
+
+### 7.4 サンプルCSV
 ```csv
 question_type,question_text,answer_text,explanation,language,genre,difficulty,tags,choice1,choice2,choice3,choice4,correct_choice
 choice,"JavaScriptでの配列の宣言方法として正しいものは？","","配列は[]を使って宣言します","JavaScript","基礎文法","easy","配列;基礎","let arr = []","let arr = {}","let arr = ()","let arr = <>",1
@@ -356,7 +388,64 @@ code,"Pythonでリストの要素を逆順にする関数を書いてくださ�
 
 ---
 
-## 8. 開発フェーズ（完了状況）
+## 8. JSONインポート仕様
+
+### 8.1 JSONフォーマット ✅
+JSON配列形式で複数の問題を一括登録できます。
+
+### 8.2 フィールド説明
+- **questionType**: "choice"(選択式) / "text"(記述式) / "code"(プログラミング) 【必須】
+- **questionText**: 問題文（Markdown対応）【必須】
+- **answerText**: 正解（記述式・プログラミングの場合、Markdown対応）
+- **explanation**: 解説（Markdown対応）
+- **language**: プログラミング言語名（存在しない場合は自動作成）
+- **genre**: ジャンル名（存在しない場合は自動作成）
+- **difficulty**: 難易度（"easy" / "medium" / "hard"）
+- **tags**: タグの配列（例: ["配列", "基礎"]）
+- **choices**: 選択肢の配列（選択式の場合のみ）【必須】
+  - **choiceText**: 選択肢のテキスト
+  - **isCorrect**: 正解かどうか（boolean）
+
+### 8.3 サンプルJSON
+
+#### 選択式問題
+```json
+[
+  {
+    "questionType": "choice",
+    "questionText": "JavaScriptでの配列の宣言方法として正しいものは？",
+    "explanation": "配列は`[]`を使って宣言します。",
+    "language": "JavaScript",
+    "genre": "基礎文法",
+    "difficulty": "easy",
+    "tags": ["配列", "基礎"],
+    "choices": [
+      {"choiceText": "let arr = []", "isCorrect": true},
+      {"choiceText": "let arr = {}", "isCorrect": false}
+    ]
+  }
+]
+```
+
+#### プログラミング問題（Markdown対応）
+```json
+[
+  {
+    "questionType": "code",
+    "questionText": "Pythonでリストの要素を逆順にする関数を書いてください",
+    "answerText": "def reverse_list(lst):\n    return lst[::-1]",
+    "explanation": "スライス記法`[::-1]`を使うことでリストを逆順にできます。\n\n```python\nnumbers = [1, 2, 3, 4, 5]\nreversed_numbers = reverse_list(numbers)\nprint(reversed_numbers)  # [5, 4, 3, 2, 1]\n```",
+    "language": "Python",
+    "genre": "基礎文法",
+    "difficulty": "medium",
+    "tags": ["Python", "リスト", "スライス"]
+  }
+]
+```
+
+---
+
+## 9. 開発フェーズ（完了状況）
 
 ### Phase 1: 基本機能（MVP） ✅ 完了
 - データベース設計・構築 ✅
@@ -379,16 +468,41 @@ code,"Pythonでリストの要素を逆順にする関数を書いてくださ�
 - 苦手な問題リスト ✅
 - CSVエクスポート機能 ✅
 
-### Phase 4: 最適化・拡張 🔄 一部実装
+### Phase 4: 最適化・拡張 ✅ 完了
 - UI/UXの改善 ✅
 - レスポンシブデザイン ✅
 - アニメーション効果 ✅
+- プログラミング問題のコードエディタ風UI ✅
+- Markdown記法対応 ✅
+- JSONインポート機能 ✅
 - パフォーマンス最適化 ⏳
 - 復習アルゴリズムの実装（間隔反復学習） ⏳
 
 ---
 
-## 9. 今後の拡張案（未実装）
+## 10. 技術詳細
+
+### 10.1 使用ライブラリ（追加分）
+- **marked**: Markdown解析・HTMLレンダリング
+- **isomorphic-dompurify**: XSS対策のためのHTMLサニタイズ
+
+### 10.2 コードエディタUI
+プログラミング問題（`questionType === 'code'`）では、以下のスタイルが自動適用されます：
+- 背景色: ダークグレー（`bg-gray-900`）
+- テキスト色: グリーン（`text-green-400`）
+- モノスペースフォント
+- 行間: ゆったり（`leading-relaxed`）
+
+### 10.3 Markdownレンダリング
+問題文、解答、解説は自動的にMarkdownとしてレンダリングされます：
+- `marked`ライブラリでMarkdownをHTMLに変換
+- `DOMPurify`でXSS攻撃を防ぐためにHTMLをサニタイズ
+- コードブロックはダークテーマで表示
+- インラインコードも強調表示
+
+---
+
+## 11. 今後の拡張案（未実装）
 
 ### 優先度: 高
 - 間隔反復学習アルゴリズム（SM-2など）
@@ -412,7 +526,7 @@ code,"Pythonでリストの要素を逆順にする関数を書いてくださ�
 
 ---
 
-## 10. プロジェクト構造
+## 12. プロジェクト構造
 
 ```
 quiz/
@@ -425,6 +539,8 @@ quiz/
 │   │   ├── languages/         # 言語管理API
 │   │   ├── genres/            # ジャンル管理API
 │   │   ├── problems/          # 問題管理API
+│   │   │   ├── import.post.ts        # CSVインポート
+│   │   │   └── import-json.post.ts   # JSONインポート
 │   │   ├── sessions/          # 学習セッションAPI
 │   │   └── stats/             # 統計API
 │   └── utils/
@@ -440,6 +556,7 @@ quiz/
 │   │   ├── index.vue          # 問題一覧
 │   │   ├── create.vue         # 問題作成
 │   │   ├── import.vue         # CSVインポート
+│   │   ├── import-json.vue    # JSONインポート
 │   │   └── [id]/
 │   │       └── edit.vue       # 問題編集
 │   └── study/
@@ -449,6 +566,9 @@ quiz/
 ├── components/                # 再利用可能コンポーネント
 │   └── Toast.vue              # トースト通知
 ├── composables/               # Composition API
+│   ├── useToast.ts            # トースト通知
+│   ├── useStudySettings.ts    # 学習設定
+│   └── useMarkdown.ts         # Markdown解析
 ├── assets/
 │   └── css/
 │       └── main.css           # TailwindCSSメイン
@@ -459,7 +579,7 @@ quiz/
 
 ---
 
-## 11. セットアップ手順
+## 13. セットアップ手順
 
 ### 11.1 依存パッケージのインストール
 ```bash
@@ -495,7 +615,7 @@ npm run dev
 
 ---
 
-## 12. 備考
+## 14. 備考
 
 - 本アプリは個人利用を想定しているため、ユーザー認証機能は実装していません
 - データベースのrootパスワード: `password123`（開発環境用）
@@ -503,20 +623,8 @@ npm run dev
 - すべての主要機能は実装済みで、動作確認済みです
 
 ---
-学習設定画面の詳細設定について現在はクリックしないと表示されないような仕様になっていますが、常に表示されるように修正してほしいです。この時、無駄に学習開始ボタンまでにスクロールが発生しないようにしたいので、コンパクトに表示するようにしたいです。
-具体的に出題数とランダムに出題するボタンを横並びで一行で表示してほしいです。また、出題数はデフォルトは空欄で、指定がない限りは条件に合うすべての問題を出題するようにしてください。
-難易度については初級、中級、上級を一列すべてにチェックボックスが入った状態をデフォルトにして表示してください。
-その下にタグを追加する部分を入れてください。
 
-
-細かい画面の修正をお願いしたいです。
-1. ホーム画面で「主な機能」は一番下に移動してください。
-2. 学習統計のカレンダーをもう少しコンパクトなUIにしてください。また、デフォルトの表示を３０日にしてください。各日付が日の数字しかないので、10/1のように月もわかるようにしてください。tailwindのカレンダーとか使えないでしょうか？
-3. グラフが表示されていません。縦軸の設定が固定値になっているかもしれません。取得できる内容に応じてください。必要あれば安全なライブラリをインストールしてください。
-
-現在のプロジェクトを別の環境で利用できるようにdocker化したいです。docker化に必要なdockerファイルおよびdockercomposeファイルを作成して下さい。
-
-## 13. バージョン履歴
+## 15. バージョン履歴
 
 ### v1.0.0 (2025-10-16) - 初回リリース
 - Phase 1-3の全機能実装完了
@@ -524,3 +632,10 @@ npm run dev
 - CSVインポート/エクスポート機能実装
 - レスポンシブデザイン対応
 - 統計ダッシュボード（4タブ構成）実装
+
+### v1.1.0 (2025-10-19) - 機能拡張リリース
+- プログラミング問題用のダークテーマコードエディタUI実装
+- Markdown記法対応（問題文、解答、解説）
+- JSONインポート機能実装（コピー&ペースト対応）
+- コードブロック表示の改善
+- XSS対策のためのHTMLサニタイズ機能追加

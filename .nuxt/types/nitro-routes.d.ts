@@ -25,6 +25,9 @@ declare module "nitropack/types" {
     '/api/problems/count': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/problems/count.get').default>>>>
     }
+    '/api/problems/import-json': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/problems/import-json.post').default>>>>
+    }
     '/api/problems/import': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/problems/import.post').default>>>>
     }
