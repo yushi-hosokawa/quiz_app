@@ -1,4 +1,4 @@
-import process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};import { tmpdir } from 'node:os';
+import process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};import './timing.js';globalThis.__timing__.logStart('Nitro Start');import { tmpdir } from 'node:os';
 import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getResponseStatusText } from 'file:///home/uchoso/quiz/node_modules/h3/dist/index.mjs';
 import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
@@ -10,7 +10,7 @@ import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLin
 import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file:///home/uchoso/quiz/node_modules/ufo/dist/index.mjs';
 import { renderToString } from 'file:///home/uchoso/quiz/node_modules/vue/server-renderer/index.mjs';
 import destr, { destr as destr$1 } from 'file:///home/uchoso/quiz/node_modules/destr/dist/index.mjs';
-import { createHooks } from 'file:///home/uchoso/quiz/node_modules/hookable/dist/index.mjs';
+import { createDebugger, createHooks } from 'file:///home/uchoso/quiz/node_modules/hookable/dist/index.mjs';
 import { createFetch, Headers as Headers$1 } from 'file:///home/uchoso/quiz/node_modules/ofetch/dist/node.mjs';
 import { fetchNodeRequestHandler, callNodeRequestHandler } from 'file:///home/uchoso/quiz/node_modules/node-mock-http/dist/index.mjs';
 import { createStorage, prefixStorage } from 'file:///home/uchoso/quiz/node_modules/unstorage/dist/index.mjs';
@@ -1114,12 +1114,72 @@ function onConsoleLog(callback) {
   consola$1.wrapConsole();
 }
 
+function defineNitroPlugin(def) {
+  return def;
+}
+
+const _9B5xZw5r8GKz__H8qp9mOTehXuuoGfl6NJSbVWr1hU = defineNitroPlugin((nitro) => {
+  createDebugger(nitro.hooks, { tag: "nitro-runtime" });
+});
+
+const globalTiming = globalThis.__timing__ || {
+  start: () => 0,
+  end: () => 0,
+  metrics: []
+};
+const timingMiddleware = eventHandler((event) => {
+  const start = globalTiming.start();
+  const _end = event.node.res.end;
+  event.node.res.end = function(chunk, encoding, cb) {
+    const metrics = [
+      ["Generate", globalTiming.end(start)],
+      ...globalTiming.metrics
+    ];
+    const serverTiming = metrics.map((m) => `-;dur=${m[1]};desc="${encodeURIComponent(m[0])}"`).join(", ");
+    if (!event.node.res.headersSent) {
+      event.node.res.setHeader("Server-Timing", serverTiming);
+    }
+    _end.call(event.node.res, chunk, encoding, cb);
+    return this;
+  }.bind(event.node.res);
+});
+const _4wl7BM71hNZBELboWWPcjt12RLQ7g07n9d1GtHypsko = defineNitroPlugin((nitro) => {
+  nitro.h3App.stack.unshift({
+    route: "/",
+    handler: timingMiddleware
+  });
+});
+
 const plugins = [
   _aQgduzHjfHXJX44siLwcwlvrqWQzwU2ZAnhWQLjpw0,
-_T8B8_di1sz50VngqGR2gt99h0T9avxeySKfAVFIyAnQ
+_T8B8_di1sz50VngqGR2gt99h0T9avxeySKfAVFIyAnQ,
+_9B5xZw5r8GKz__H8qp9mOTehXuuoGfl6NJSbVWr1hU,
+_4wl7BM71hNZBELboWWPcjt12RLQ7g07n9d1GtHypsko
 ];
 
-const assets = {};
+const assets = {
+  "/index.mjs": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"1e9ca-LOjx1VTjkYAwnZcIvM2gLo0lMrQ\"",
+    "mtime": "2025-10-18T06:32:31.062Z",
+    "size": 125386,
+    "path": "index.mjs"
+  },
+  "/index.mjs.map": {
+    "type": "application/json",
+    "etag": "\"6d0b5-YFZcG/eA2Li5A0IKfA8gwJndqhY\"",
+    "mtime": "2025-10-18T06:32:31.062Z",
+    "size": 446645,
+    "path": "index.mjs.map"
+  },
+  "/timing.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"18e-0pRLUDweg+nNOYiHMfwI/i1Hccs\"",
+    "mtime": "2025-10-18T06:32:31.062Z",
+    "size": 398,
+    "path": "timing.js"
+  }
+};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
@@ -2271,7 +2331,10 @@ const count_get = defineEventHandler(async (event) => {
     where.genreId = { in: genreIds };
   }
   if (difficulties && difficulties.length > 0) {
-    where.difficulty = { in: difficulties };
+    where.OR = [
+      { difficulty: { in: difficulties } },
+      { difficulty: null }
+    ];
   }
   if (tags && tags.length > 0) {
     where.tags = {
@@ -2527,7 +2590,10 @@ const random_get = defineEventHandler(async (event) => {
       where.genreId = { in: genreIds };
     }
     if (difficulties && difficulties.length > 0) {
-      where.difficulty = { in: difficulties };
+      where.OR = [
+        { difficulty: { in: difficulties } },
+        { difficulty: null }
+      ];
     }
     if (tags && tags.length > 0) {
       where.tags = {
@@ -3512,5 +3578,5 @@ function renderHTMLDocument(html) {
 const renderer$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: renderer
-}, Symbol.toStringTag, { value: 'Module' }));
+}, Symbol.toStringTag, { value: 'Module' }));;globalThis.__timing__.logEnd('Nitro Start');
 //# sourceMappingURL=index.mjs.map

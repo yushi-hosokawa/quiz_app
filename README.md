@@ -59,13 +59,19 @@ mysql -u root -p
 CREATE DATABASE quiz_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### 4. Prismaマイグレーション
+### 4. Prismaスキーマの適用
 
 データベーススキーマを作成します：
 
 ```bash
+# 開発環境: スキーマを直接データベースに適用
+npx prisma db push
+
+# または、マイグレーションファイルを作成する場合
 npx prisma migrate dev --name init
 ```
+
+**注意**: このプロジェクトでは`prisma db push`を使用してスキーマを同期しています。マイグレーションファイルは作成されません。
 
 ### 5. 開発サーバーの起動
 
@@ -140,10 +146,12 @@ quiz/
 - **languages** - プログラミング言語
 - **genres** - ジャンル
 - **problems** - 問題
-- **choices** - 選択肢
-- **problem_tags** - タグ
+- **choices** - 選択肢（問題削除時にカスケード削除）
+- **problem_tags** - タグ（問題削除時にカスケード削除）
 - **study_sessions** - 学習セッション
-- **study_records** - 学習記録
+- **study_records** - 学習記録（問題削除時、セッション削除時にカスケード削除）
+
+**カスケード削除**: 問題を削除すると、関連する選択肢、タグ、学習記録が自動的に削除されます。
 
 詳細は `prisma/schema.prisma` を参照してください。
 

@@ -142,33 +142,33 @@
       </div>
 
       <!-- カテゴリ・難易度 -->
-      <div class="card">
+      <div class="card overflow-visible relative z-40">
         <div class="grid md:grid-cols-3 gap-4">
-          <div>
+          <div class="relative z-30">
             <label class="block text-sm font-bold text-gray-900 mb-3">
               プログラミング言語
             </label>
-            <select v-model="form.languageId" class="input-field">
-              <option :value="null">選択しない</option>
-              <option v-for="lang in languages" :key="lang.id" :value="lang.id">
-                {{ lang.name }}
-              </option>
-            </select>
+            <ComboBox
+              v-model="form.languageId"
+              :options="languages"
+              placeholder="選択または新規作成"
+              @create="createLanguage"
+            />
           </div>
 
-          <div>
+          <div class="relative z-20">
             <label class="block text-sm font-bold text-gray-900 mb-3">
               ジャンル
             </label>
-            <select v-model="form.genreId" class="input-field">
-              <option :value="null">選択しない</option>
-              <option v-for="genre in genres" :key="genre.id" :value="genre.id">
-                {{ genre.name }}
-              </option>
-            </select>
+            <ComboBox
+              v-model="form.genreId"
+              :options="genres"
+              placeholder="選択または新規作成"
+              @create="createGenre"
+            />
           </div>
 
-          <div>
+          <div class="relative z-10">
             <label class="block text-sm font-bold text-gray-900 mb-3">
               難易度
             </label>
@@ -183,7 +183,7 @@
       </div>
 
       <!-- タグ -->
-      <div class="card">
+      <div class="card relative z-0">
         <label class="block text-sm font-bold text-gray-900 mb-3">
           タグ
         </label>
@@ -291,6 +291,48 @@ const addTag = () => {
 // タグを削除
 const removeTag = (index: number) => {
   form.value.tags.splice(index, 1)
+}
+
+// 新しいプログラミング言語を作成
+const createLanguage = async (name: string) => {
+  try {
+    const newLanguage = await $fetch('/api/languages', {
+      method: 'POST',
+      body: { name }
+    })
+    languages.value.push(newLanguage)
+    languages.value.sort((a, b) => a.name.localeCompare(b.name))
+    form.value.languageId = newLanguage.id
+    success(`「${name}」を追加しました`)
+  } catch (err: any) {
+    console.error('Failed to create language:', err)
+    if (err.statusCode === 409) {
+      error('この言語はすでに登録されています')
+    } else {
+      error('言語の作成に失敗しました')
+    }
+  }
+}
+
+// 新しいジャンルを作成
+const createGenre = async (name: string) => {
+  try {
+    const newGenre = await $fetch('/api/genres', {
+      method: 'POST',
+      body: { name }
+    })
+    genres.value.push(newGenre)
+    genres.value.sort((a, b) => a.name.localeCompare(b.name))
+    form.value.genreId = newGenre.id
+    success(`「${name}」を追加しました`)
+  } catch (err: any) {
+    console.error('Failed to create genre:', err)
+    if (err.statusCode === 409) {
+      error('このジャンルはすでに登録されています')
+    } else {
+      error('ジャンルの作成に失敗しました')
+    }
+  }
 }
 
 // 問題を送信
