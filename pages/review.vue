@@ -51,9 +51,10 @@
 
       <!-- 問題文 -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 leading-relaxed">
-          {{ currentProblem.questionText }}
-        </h2>
+        <div
+          class="text-2xl font-bold text-gray-900 mb-6 leading-relaxed markdown-content"
+          v-html="renderMarkdown(currentProblem.questionText)"
+        ></div>
 
         <!-- 選択式の場合 -->
         <div v-if="currentProblem.questionType === 'choice' && currentProblem.choices" class="space-y-3">
@@ -75,7 +76,7 @@
               >
                 {{ String.fromCharCode(65 + index) }}
               </div>
-              <span class="font-medium text-gray-800">{{ choice.choiceText }}</span>
+              <div class="font-medium text-gray-800 markdown-content flex-1" v-html="renderMarkdown(choice.choiceText)"></div>
             </div>
           </button>
         </div>
@@ -121,9 +122,7 @@
           あなたの回答
         </h3>
         <div class="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
-          <p v-if="currentProblem.questionType === 'choice'" class="text-gray-800 font-medium">
-            {{ selectedChoice?.choiceText || '（未選択）' }}
-          </p>
+          <div v-if="currentProblem.questionType === 'choice'" class="text-gray-800 font-medium markdown-content" v-html="renderMarkdown(selectedChoice?.choiceText || '（未選択）')"></div>
           <p v-else class="whitespace-pre-wrap text-gray-800 font-mono text-sm">{{ userAnswer || '（未回答）' }}</p>
         </div>
       </div>
@@ -135,10 +134,8 @@
           正解
         </h3>
         <div class="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
-          <p v-if="currentProblem.questionType === 'choice'" class="text-gray-800 font-medium">
-            {{ currentProblem.choices?.find(c => c.isCorrect)?.choiceText }}
-          </p>
-          <p v-else class="whitespace-pre-wrap text-gray-800 font-mono text-sm">{{ currentProblem.answerText }}</p>
+          <div v-if="currentProblem.questionType === 'choice'" class="text-gray-800 font-medium markdown-content" v-html="renderMarkdown(currentProblem.choices?.find(c => c.isCorrect)?.choiceText)"></div>
+          <div v-else class="text-gray-800 markdown-content" v-html="renderMarkdown(currentProblem.answerText)"></div>
         </div>
       </div>
 
@@ -149,7 +146,7 @@
           解説
         </h3>
         <div class="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
-          <p class="whitespace-pre-wrap text-gray-700 leading-relaxed">{{ currentProblem.explanation }}</p>
+          <div class="text-gray-700 leading-relaxed markdown-content" v-html="renderMarkdown(currentProblem.explanation)"></div>
         </div>
       </div>
 
@@ -215,6 +212,8 @@
 definePageMeta({
   layout: 'default'
 })
+
+const { renderMarkdown } = useMarkdown()
 
 const problems = ref<any[]>([])
 const currentIndex = ref(0)

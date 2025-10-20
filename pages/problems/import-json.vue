@@ -93,19 +93,89 @@
           :key="index"
           class="p-4 bg-gray-50 rounded-xl border border-gray-200"
         >
-          <div class="flex items-center gap-2 mb-2">
-            <span class="badge-primary text-xs">{{ index + 1 }}</span>
-            <span class="badge-primary text-xs">{{ questionTypeText(problem.questionType) }}</span>
-            <span v-if="problem.language" class="badge-success text-xs">{{ problem.language }}</span>
-            <span v-if="problem.genre" class="badge-warning text-xs">{{ problem.genre }}</span>
-            <span v-if="problem.difficulty" class="badge text-xs bg-gray-200 text-gray-700">
-              {{ difficultyText(problem.difficulty) }}
-            </span>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="badge-primary text-xs">{{ index + 1 }}</span>
+              <span class="badge-primary text-xs">{{ questionTypeText(problem.questionType) }}</span>
+              <span v-if="problem.language" class="badge-success text-xs">{{ problem.language }}</span>
+              <span v-if="problem.genre" class="badge-warning text-xs">{{ problem.genre }}</span>
+              <span v-if="problem.difficulty" class="badge text-xs bg-gray-200 text-gray-700">
+                {{ difficultyText(problem.difficulty) }}
+              </span>
+            </div>
+            <button
+              @click="removeFromPreview(index)"
+              class="text-red-600 hover:text-red-800 transition-colors p-1"
+              title="削除"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </button>
           </div>
-          <p class="font-semibold text-gray-900 mb-1">{{ truncateText(problem.questionText, 100) }}</p>
-          <p v-if="problem.questionType === 'choice' && problem.choices" class="text-xs text-gray-600">
-            選択肢: {{ problem.choices.length }}個
-          </p>
+
+          <div class="space-y-3">
+            <!-- 問題文 -->
+            <div>
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">問題</h3>
+              <div
+                class="text-sm text-gray-900 markdown-content"
+                v-html="renderMarkdown(problem.questionText)"
+              ></div>
+            </div>
+
+            <!-- 選択肢（選択式の場合） -->
+            <div v-if="problem.questionType === 'choice' && problem.choices">
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">選択肢</h3>
+              <div class="space-y-1">
+                <div
+                  v-for="(choice, cIndex) in problem.choices"
+                  :key="cIndex"
+                  class="flex items-start gap-2 text-sm"
+                >
+                  <span :class="choice.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'">
+                    {{ String.fromCharCode(65 + cIndex) }}.
+                  </span>
+                  <div
+                    :class="choice.isCorrect ? 'text-green-900 font-semibold' : 'text-gray-700'"
+                    class="markdown-content flex-1"
+                  >
+                    <span v-html="renderMarkdown(choice.choiceText)"></span>
+                    <span v-if="choice.isCorrect" class="text-green-600 ml-1">✓</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 正解（記述式・プログラミングの場合） -->
+            <div v-if="problem.questionType !== 'choice' && problem.answerText">
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">正解</h3>
+              <div
+                class="text-sm text-green-900 bg-green-50 p-2 rounded border border-green-200 markdown-content"
+                v-html="renderMarkdown(problem.answerText)"
+              ></div>
+            </div>
+
+            <!-- 解説 -->
+            <div v-if="problem.explanation">
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">解説</h3>
+              <div
+                class="text-sm text-gray-700 markdown-content"
+                v-html="renderMarkdown(problem.explanation)"
+              ></div>
+            </div>
+
+            <!-- タグ -->
+            <div v-if="problem.tags && problem.tags.length > 0" class="flex gap-1 flex-wrap">
+              <span
+                v-for="(tag, tIndex) in problem.tags"
+                :key="tIndex"
+                class="badge text-xs bg-blue-100 text-blue-700"
+              >
+                {{ tag }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -151,6 +221,7 @@ definePageMeta({
 
 const router = useRouter()
 const { success, error } = useToast()
+const { renderMarkdown } = useMarkdown()
 
 const jsonInput = ref('')
 const previewData = ref<any[]>([])
@@ -321,6 +392,14 @@ const loadSample = (type: 'choice' | 'text' | 'code') => {
   errors.value = []
 }
 
+// プレビューから削除
+const removeFromPreview = (index: number) => {
+  previewData.value.splice(index, 1)
+  if (previewData.value.length === 0) {
+    errors.value = []
+  }
+}
+
 // ヘルパー関数
 const questionTypeText = (type: string) => {
   const map: Record<string, string> = {
@@ -338,11 +417,6 @@ const difficultyText = (difficulty: string) => {
     hard: '上級'
   }
   return map[difficulty] || difficulty
-}
-
-const truncateText = (text: string, maxLength: number) => {
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
 }
 </script>
 

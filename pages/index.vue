@@ -85,7 +85,7 @@
         <h2 class="text-3xl font-bold gradient-text mb-2">データ管理</h2>
         <p class="text-gray-600">問題とカテゴリを効率的に管理</p>
       </div>
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <NuxtLink to="/problems/import" class="card-gradient group relative overflow-hidden hover:shadow-xl transition-all duration-300">
           <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
           <div class="relative z-10 flex items-center space-x-6">
@@ -95,6 +95,23 @@
               <p class="text-gray-600 text-sm mb-4">
                 CSVファイルから問題を一括登録<br />
                 NotionやExcelから簡単に取り込み可能
+              </p>
+              <span class="text-blue-600 font-semibold group-hover:underline">
+                インポート画面へ →
+              </span>
+            </div>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink to="/problems/import-json" class="card-gradient group relative overflow-hidden hover:shadow-xl transition-all duration-300">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div class="relative z-10 flex items-center space-x-6">
+            <div class="text-6xl">📋</div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-gray-900 mb-2">JSONインポート</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                JSON形式で問題を一括登録<br />
+                柔軟なフォーマットで取り込み可能
               </p>
               <span class="text-blue-600 font-semibold group-hover:underline">
                 インポート画面へ →
@@ -196,7 +213,7 @@
             </div>
           </div>
           <div>
-            <h3 class="font-bold text-gray-900 mb-1">CSVインポート</h3>
+            <h3 class="font-bold text-gray-900 mb-1">CSV/JSONインポート</h3>
             <p class="text-gray-600 text-sm">大量の問題を一括登録、NotionやExcelから簡単に取り込み</p>
           </div>
         </div>
@@ -210,6 +227,18 @@
           <div>
             <h3 class="font-bold text-gray-900 mb-1">カテゴリ管理</h3>
             <p class="text-gray-600 text-sm">言語やジャンルを自由に管理、効率的な学習をサポート</p>
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-4 p-4 rounded-xl hover:bg-blue-50/50 transition-colors duration-300">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center text-white text-xl shadow-lg">
+              ✓
+            </div>
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-900 mb-1">Markdown対応</h3>
+            <p class="text-gray-600 text-sm">問題文や解説にMarkdown記法を使用、コードブロックも美しく表示</p>
           </div>
         </div>
       </div>
