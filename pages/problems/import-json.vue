@@ -22,11 +22,29 @@
       </div>
     </div>
 
-    <!-- フォーマット説明 -->
+    <!-- フォーマット説明（折り畳み） -->
     <div class="card mb-6">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">📖 フォーマット説明</h2>
+      <button
+        @click="showFormatHelp = !showFormatHelp"
+        class="w-full flex items-center justify-between text-left hover:bg-gray-50 -m-6 p-6 rounded-xl transition-colors"
+      >
+        <h2 class="text-xl font-bold text-gray-900">📖 フォーマット説明</h2>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-gray-500 transition-transform duration-200"
+          :class="{ 'rotate-180': showFormatHelp }"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      <div class="space-y-4 text-sm">
+      <div
+        v-show="showFormatHelp"
+        class="mt-4 space-y-4 text-sm animate-slide-up"
+      >
         <div>
           <h3 class="font-bold text-gray-900 mb-2">基本フィールド</h3>
           <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
@@ -59,10 +77,29 @@
       </div>
     </div>
 
-    <!-- サンプルJSON -->
+    <!-- サンプルJSON（折り畳み） -->
     <div class="card mb-6">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">💡 サンプルJSON</h2>
-      <div class="space-y-4">
+      <button
+        @click="showSamples = !showSamples"
+        class="w-full flex items-center justify-between text-left hover:bg-gray-50 -m-6 p-6 rounded-xl transition-colors"
+      >
+        <h2 class="text-xl font-bold text-gray-900">💡 サンプルJSON</h2>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-gray-500 transition-transform duration-200"
+          :class="{ 'rotate-180': showSamples }"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <div
+        v-show="showSamples"
+        class="mt-4 space-y-4 animate-slide-up"
+      >
         <button
           @click="loadSample('choice')"
           class="btn-secondary mr-2"
@@ -86,8 +123,30 @@
 
     <!-- プレビュー -->
     <div v-if="previewData.length > 0" class="card mb-6">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">👀 プレビュー（{{ previewData.length }}問）</h2>
-      <div class="space-y-4 max-h-96 overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">👀 プレビュー（{{ previewData.length }}問）</h2>
+        <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+          <button
+            @click="previewMode = 'edit'"
+            :class="previewMode === 'edit'
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="px-4 py-2 text-sm font-semibold transition-colors"
+          >
+            ✏️ 編集
+          </button>
+          <button
+            @click="previewMode = 'preview'"
+            :class="previewMode === 'preview'
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="px-4 py-2 text-sm font-semibold border-l border-gray-300 transition-colors"
+          >
+            👁️ プレビュー
+          </button>
+        </div>
+      </div>
+      <div class="space-y-4 max-h-[600px] overflow-y-auto">
         <div
           v-for="(problem, index) in previewData"
           :key="index"
@@ -114,12 +173,107 @@
             </button>
           </div>
 
-          <div class="space-y-3">
+          <!-- 編集モード -->
+          <div v-if="previewMode === 'edit'" class="space-y-3">
+            <!-- 問題文 -->
+            <div>
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">問題</h3>
+              <textarea
+                v-model="problem.questionText"
+                class="w-full text-sm text-gray-900 border border-gray-300 rounded p-2 font-sans resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows="3"
+                @input="autoResize($event.target)"
+              ></textarea>
+            </div>
+
+            <!-- 選択肢（選択式の場合） -->
+            <div v-if="problem.questionType === 'choice' && problem.choices">
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">選択肢</h3>
+              <div class="space-y-2">
+                <div
+                  v-for="(choice, cIndex) in problem.choices"
+                  :key="cIndex"
+                  class="flex items-start gap-2"
+                >
+                  <div class="flex items-center gap-2 pt-2">
+                    <span :class="choice.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'" class="text-sm">
+                      {{ String.fromCharCode(65 + cIndex) }}.
+                    </span>
+                    <input
+                      type="checkbox"
+                      v-model="choice.isCorrect"
+                      class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                      title="正解にする"
+                    />
+                  </div>
+                  <textarea
+                    v-model="choice.choiceText"
+                    class="flex-1 text-sm border border-gray-300 rounded p-2 font-sans resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    :class="choice.isCorrect ? 'bg-green-50 border-green-300' : 'bg-white'"
+                    rows="2"
+                    @input="autoResize($event.target)"
+                  ></textarea>
+                  <button
+                    @click="removeChoice(problem, cIndex)"
+                    class="text-red-600 hover:text-red-800 p-1 mt-1"
+                    title="選択肢を削除"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  @click="addChoice(problem)"
+                  class="text-sm text-blue-600 hover:text-blue-800 font-semibold"
+                >
+                  + 選択肢を追加
+                </button>
+              </div>
+            </div>
+
+            <!-- 正解（記述式・プログラミングの場合） -->
+            <div v-if="problem.questionType !== 'choice' && problem.answerText">
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">正解</h3>
+              <textarea
+                v-model="problem.answerText"
+                class="w-full text-sm text-green-900 bg-green-50 border border-green-300 rounded p-2 font-mono resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                rows="4"
+                @input="autoResize($event.target)"
+              ></textarea>
+            </div>
+
+            <!-- 解説 -->
+            <div v-if="problem.explanation !== undefined">
+              <h3 class="text-xs font-semibold text-gray-500 mb-1">解説</h3>
+              <textarea
+                v-model="problem.explanation"
+                class="w-full text-sm text-gray-700 border border-gray-300 rounded p-2 font-sans resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows="3"
+                placeholder="解説を入力..."
+                @input="autoResize($event.target)"
+              ></textarea>
+            </div>
+
+            <!-- タグ -->
+            <div v-if="problem.tags && problem.tags.length > 0" class="flex gap-1 flex-wrap">
+              <span
+                v-for="(tag, tIndex) in problem.tags"
+                :key="tIndex"
+                class="badge text-xs bg-blue-100 text-blue-700"
+              >
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+
+          <!-- プレビューモード -->
+          <div v-else class="space-y-3">
             <!-- 問題文 -->
             <div>
               <h3 class="text-xs font-semibold text-gray-500 mb-1">問題</h3>
               <div
-                class="text-sm text-gray-900 markdown-content"
+                class="text-sm text-gray-900 markdown-content p-3 bg-white rounded border border-gray-200"
                 v-html="renderMarkdown(problem.questionText)"
               ></div>
             </div>
@@ -127,22 +281,22 @@
             <!-- 選択肢（選択式の場合） -->
             <div v-if="problem.questionType === 'choice' && problem.choices">
               <h3 class="text-xs font-semibold text-gray-500 mb-1">選択肢</h3>
-              <div class="space-y-1">
+              <div class="space-y-2">
                 <div
                   v-for="(choice, cIndex) in problem.choices"
                   :key="cIndex"
-                  class="flex items-start gap-2 text-sm"
+                  class="flex items-start gap-2 p-3 rounded border"
+                  :class="choice.isCorrect ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'"
                 >
-                  <span :class="choice.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'">
+                  <span :class="choice.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'" class="text-sm">
                     {{ String.fromCharCode(65 + cIndex) }}.
                   </span>
                   <div
                     :class="choice.isCorrect ? 'text-green-900 font-semibold' : 'text-gray-700'"
                     class="markdown-content flex-1"
-                  >
-                    <span v-html="renderMarkdown(choice.choiceText)"></span>
-                    <span v-if="choice.isCorrect" class="text-green-600 ml-1">✓</span>
-                  </div>
+                    v-html="renderMarkdown(choice.choiceText)"
+                  ></div>
+                  <span v-if="choice.isCorrect" class="text-green-600 text-sm">✓ 正解</span>
                 </div>
               </div>
             </div>
@@ -151,7 +305,7 @@
             <div v-if="problem.questionType !== 'choice' && problem.answerText">
               <h3 class="text-xs font-semibold text-gray-500 mb-1">正解</h3>
               <div
-                class="text-sm text-green-900 bg-green-50 p-2 rounded border border-green-200 markdown-content"
+                class="text-sm text-green-900 bg-green-50 p-3 rounded border border-green-200 markdown-content"
                 v-html="renderMarkdown(problem.answerText)"
               ></div>
             </div>
@@ -160,7 +314,7 @@
             <div v-if="problem.explanation">
               <h3 class="text-xs font-semibold text-gray-500 mb-1">解説</h3>
               <div
-                class="text-sm text-gray-700 markdown-content"
+                class="text-sm text-gray-700 markdown-content p-3 bg-blue-50 rounded border border-blue-200"
                 v-html="renderMarkdown(problem.explanation)"
               ></div>
             </div>
@@ -227,6 +381,9 @@ const jsonInput = ref('')
 const previewData = ref<any[]>([])
 const errors = ref<string[]>([])
 const importing = ref(false)
+const previewMode = ref<'edit' | 'preview'>('edit')
+const showFormatHelp = ref(false)
+const showSamples = ref(false)
 
 // プレースホルダーテキスト
 const placeholderText = `例:
@@ -397,6 +554,34 @@ const removeFromPreview = (index: number) => {
   previewData.value.splice(index, 1)
   if (previewData.value.length === 0) {
     errors.value = []
+  }
+}
+
+// 選択肢を追加
+const addChoice = (problem: any) => {
+  if (!problem.choices) {
+    problem.choices = []
+  }
+  problem.choices.push({
+    choiceText: '',
+    isCorrect: false
+  })
+}
+
+// 選択肢を削除
+const removeChoice = (problem: any, index: number) => {
+  if (problem.choices && problem.choices.length > 2) {
+    problem.choices.splice(index, 1)
+  } else {
+    error('選択肢は2つ以上必要です')
+  }
+}
+
+// テキストエリアの自動リサイズ
+const autoResize = (element: EventTarget | null) => {
+  if (element && element instanceof HTMLTextAreaElement) {
+    element.style.height = 'auto'
+    element.style.height = element.scrollHeight + 'px'
   }
 }
 
